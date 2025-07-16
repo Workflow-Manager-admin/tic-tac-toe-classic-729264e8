@@ -281,14 +281,17 @@ function App() {
             Restart
           </button>
         </div>
-        {/* Difficulty selector appears only in AI mode */}
-        {mode === "ai" && (
+        {/* Difficulty selector - always visible, disabled unless in AI mode */}
+        <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <label style={{ fontSize: "0.96rem", marginBottom: "4px", color: "#bbb", letterSpacing: "0.02em" }}>
+            Difficulty (AI Only)
+          </label>
           <DifficultySelector
             value={difficulty}
             onChange={handleDifficultyChange}
-            disabled={!isGameOver && squares.some(Boolean)}
+            disabled={mode !== "ai" || (!isGameOver && squares.some(Boolean))}
           />
-        )}
+        </div>
       </main>
       <footer className="ttt-footer">
         <span>
