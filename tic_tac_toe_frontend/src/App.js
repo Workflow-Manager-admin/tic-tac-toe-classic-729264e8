@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
+import DifficultySelector from "./DifficultySelector";
 
 /**
  * Utility to clone an array.
@@ -31,33 +32,62 @@ function calculateWinner(squares) {
 }
 
 /**
- * Returns random empty index for AI move.
+ * AI Move function - selects move based on difficulty.
+ * @param {'easy'|'medium'|'hard'} difficulty
  */
-function aiMove(squares) {
+function aiMove(squares, difficulty) {
+  const empties = squares
+    .map((v, i) => (v ? null : i))
+    .filter((v) => v !== null);
+  // Helper: select random empty square
+  const randomMove = () => {
+    if (empties.length === 0) return undefined;
+    return empties[Math.floor(Math.random() * empties.length)];
+  };
+
+  // Helper: immediate win/block logic (used in medium/hard)
+  function findImmediateMove(char) {
+    for (let i = 0; i < squares.length; ++i) {
+      if (!squares[i]) {
+        let copy = cloneBoard(squares);
+        copy[i] = char;
+        if (calculateWinner(copy)?.winner === char) return i;
+      }
+    }
+    return null;
+  }
+
+  if (difficulty === "easy") {
+    // Easy: random move
+    return randomMove();
+  }
+
+  if (difficulty === "medium") {
+    // Medium: block win, else random
+    // Try to win as O
+    const winIdx = findImmediateMove("O");
+    if (winIdx !== null) return winIdx;
+    // Try to block X
+    const blockIdx = findImmediateMove("X");
+    if (blockIdx !== null) return blockIdx;
+    return randomMove();
+  }
+
+  // Hard (minimax): perfect play
+  // Falls back to "classic" hard tic tac toe strategy (as before)
   // Try to win
-  for (let i = 0; i < squares.length; ++i) {
-    if (!squares[i]) {
-      let copy = cloneBoard(squares);
-      copy[i] = "O";
-      if (calculateWinner(copy)?.winner === "O") return i;
-    }
-  }
+  const winIdx = findImmediateMove("O");
+  if (winIdx !== null) return winIdx;
   // Block X
-  for (let i = 0; i < squares.length; ++i) {
-    if (!squares[i]) {
-      let copy = cloneBoard(squares);
-      copy[i] = "X";
-      if (calculateWinner(copy)?.winner === "X") return i;
-    }
-  }
+  const blockIdx = findImmediateMove("X");
+  if (blockIdx !== null) return blockIdx;
   // Take center
   if (!squares[4]) return 4;
   // Pick random corner
-  const corners = [0,2,6,8].filter(idx => !squares[idx]);
+  const corners = [0, 2, 6, 8].filter((idx) => !squares[idx]);
   if (corners.length) return corners[Math.floor(Math.random() * corners.length)];
   // Pick any
-  const empties = squares.map((v,i)=>v?null:i).filter(v=>v!==null);
-  return empties[Math.floor(Math.random() * empties.length)];
+  return randomMove();
 }
 
 /**
@@ -129,6 +159,7 @@ function App() {
   // State hooks
   const [theme, setTheme] = useState('light');
   const [mode, setMode] = useState('human'); // "human" | "ai"
+  const [difficulty, setDifficulty] = useState('medium'); // "easy" | "medium" | "hard"
   const [squares, setSquares] = useState(Array(9).fill(null));
   const [xIsNext, setXIsNext] = useState(true);
   const [status, setStatus] = useState("");
@@ -164,7 +195,7 @@ function App() {
   useEffect(() => {
     if (mode === "ai" && !isGameOver && !xIsNext) {
       const moveTimeout = setTimeout(() => {
-        const idx = aiMove(squares);
+        const idx = aiMove(squares, difficulty);
         if (idx !== undefined && squares[idx] === null) {
           handleSquareClick(idx, true);
         }
@@ -172,7 +203,7 @@ function App() {
       return () => clearTimeout(moveTimeout);
     }
     // eslint-disable-next-line
-  }, [xIsNext, mode, isGameOver, squares]);
+  }, [xIsNext, mode, isGameOver, squares, difficulty]);
 
   // PUBLIC_INTERFACE
   function handleSquareClick(i, isAIAgentMove = false) {
@@ -205,6 +236,14 @@ function App() {
   function handleModeSwitch(newMode) {
     if (mode !== newMode) {
       setMode(newMode);
+      handleRestart();
+    }
+  }
+
+  // PUBLIC_INTERFACE
+  function handleDifficultyChange(newDifficulty) {
+    if (difficulty !== newDifficulty) {
+      setDifficulty(newDifficulty);
       handleRestart();
     }
   }
@@ -242,6 +281,14 @@ function App() {
             Restart
           </button>
         </div>
+        {/* Difficulty selector appears only in AI mode */}
+        {mode === "ai" && (
+          <DifficultySelector
+            value={difficulty}
+            onChange={handleDifficultyChange}
+            disabled={!isGameOver && squares.some(Boolean)}
+          />
+        )}
       </main>
       <footer className="ttt-footer">
         <span>

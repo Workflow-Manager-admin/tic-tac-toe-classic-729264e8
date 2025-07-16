@@ -210,6 +210,45 @@ body {
   filter: brightness(1.09);
 }
 
+/* Difficulty Selector: Minimal button group, integrated in controls */
+.ttt-difficulty-selector {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+.ttt-difficulty-btn {
+  padding: 6px 16px;
+  background: #fff;
+  border: 2px solid var(--ttt-primary);
+  color: var(--ttt-primary);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 0.5px 2px #dedede67;
+  cursor: pointer;
+  transition: all 0.13s;
+  outline: none;
+}
+
+.ttt-difficulty-btn.selected, .ttt-difficulty-btn:active, .ttt-difficulty-btn:focus {
+  background: var(--ttt-accent);
+  color: #fff;
+  border-color: var(--ttt-secondary);
+}
+
+.ttt-difficulty-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Each diff color for quick recognition */
+.ttt-difficulty-btn:nth-child(1).selected { background: #e8f4fd; color: var(--ttt-primary); border-color: var(--ttt-primary);}
+.ttt-difficulty-btn:nth-child(2).selected { background: #fff9e8; color: #FFC107; border-color: #FFC107;}
+.ttt-difficulty-btn:nth-child(3).selected { background: var(--ttt-accent); color: #fff; border-color: var(--ttt-accent);}
+
 .ttt-footer {
   text-align: center;
   font-size: 0.93rem;
